@@ -1,5 +1,6 @@
 import httpProxy from 'express-http-proxy';
 import { Express } from 'express';
+import isAuthenticated from './utils';
 
 const userServiceProxy = httpProxy('http://localhost:4000');
 const orderServiceProxy = httpProxy('http://localhost:2000');
@@ -10,7 +11,16 @@ class Routes {
     this.app = app;
   }
 
+
   public appRoutes() {
+    this.app.use((req, res, next) => {
+      if (isAuthenticated(req)) {
+        next();
+      } else {
+        res.status(401).send("Unauthorized");
+      }
+    });
+
     this.app.get('/getUserDetails/:userId', (req, res, next) => {
       userServiceProxy(req, res, next);
     });
